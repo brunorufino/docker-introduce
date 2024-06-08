@@ -12,7 +12,7 @@ Comando para executar script SQL
 Get-Content ./api/db/scripts.sql | docker exec -i mysql-container mysql -u root -p123as321
 
 
-Criando imagem da API
+Criando imagem da Node para usar na API
 
 docker build -t node-image -f api/Dockerfile
 

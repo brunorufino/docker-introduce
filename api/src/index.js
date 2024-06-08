@@ -3,40 +3,57 @@ const mysql = require('mysql');
 
 const port = 3000;
 const app = express();
+const connection = createConnection();
+// Função para criar uma nova conexão com o banco de dados
+function createConnection() {
+    return mysql.createConnection({
+        host: 'mysql-container',
+        user: 'root',
+        password: '123as321',
+        database: 'atividade4',
+        authPlugin: 'mysql_clear_password'
+    });
+}
 
 
-const connection = mysql.createConnection({
-    host: 'mysql-container', // Nome do contêiner MySQL
-    user: 'root',
-    password: '123as321',
-    database: 'atividade4'
+// Endpoint de liveness
+app.get('/liveness', (req, res) => {
+    res.send('API está disponível');
 });
 
-// Adicione um log para verificar se a conexão está sendo estabelecida corretamente
-connection.connect((err) => {
-    if (err) {
-        console.error('Erro ao conectar ao banco de dados:', err);
-        return;
-    }
-    console.log('Conectado ao banco de dados');
+// Endpoint de readiness
+app.get('/readiness', (req, res) => {
+    
+
+    connection.query('SELECT * FROM bitcoin_wallets', (error, results) => {
+        if (error) {
+            console.error('Erro ao verificar a disponibilidade do banco de dados:', error);
+            res.status(500).send('Erro ao verificar a disponibilidade do banco de dados');
+            return;
+        }
+        res.send('API está pronta para uso');
+    });
 });
 
 app.get('/wallets', async (req, res) => {
+   
     try {
+        connection.connect(); // Abrir a conexão com o banco de dados
+
         const sql = "SELECT * FROM bitcoin_wallets";
-        const results = await new Promise((resolve, reject) => {
-            connection.query(sql, (error, results) => {
-                if (error) {
-                    console.error('Erro ao executar a consulta:', error);
-                    reject(error);
-                } else {
-                    resolve(results);
-                }
-            });
+        connection.query(sql, (error, results) => {
+            if (error) {
+                console.error('Erro ao executar a consulta:', error);
+                res.status(500).send('Erro ao buscar dados');
+                return;
+            }
+            res.send(results.map(item => ({ wallet_address: item.wallet_address, balance: item.balance })));
         });
-        res.send(results.map(item => ({ wallet_address: item.wallet_address, balance: item.balance })));
     } catch (error) {
+        console.error('Erro ao buscar dados:', error);
         res.status(500).send('Erro ao buscar dados');
+    } finally {
+        connection.end(); // Fechar a conexão após a consulta
     }
 });
 
