@@ -21,7 +21,6 @@ Executando a imagem e acessando uma rota fora do container especificando a porta
 docker run -d -v ${PWD}/api:/home/nome/app -p 3000:3000 --rm --name node-container node-image
 
 
-
 #### Criando uma rede entre os containers 
 
 docker network create my-network
@@ -36,7 +35,7 @@ Iniciar o Contêiner Node.js:
 docker run -d --network my-network -p 3000:3000 --name node-container node-image
 
 
-docker exec -it mysql-container mysql -u root -p atividade4
+
 
 
 

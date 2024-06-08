@@ -1,7 +1,9 @@
 const express = require('express');
 const mysql = require('mysql');
+
 const port = 3000;
 const app = express();
+
 
 const connection = mysql.createConnection({
     host: 'mysql-container', // Nome do contêiner MySQL
@@ -19,15 +21,23 @@ connection.connect((err) => {
     console.log('Conectado ao banco de dados');
 });
 
-app.get('/wallets', (req, res) => {
-    connection.query('SELECT * FROM bitcoin_wallets', (error, results) => {
-        if (error) {
-            console.error('Erro ao executar a consulta:', error);
-            res.status(500).send('Erro ao buscar dados');
-            return;
-        }
-        res.send(results.map(item => ({wallet_address: item.wallet_address, balance: item.balance})));
-    });
+app.get('/wallets', async (req, res) => {
+    try {
+        const sql = "SELECT * FROM bitcoin_wallets";
+        const results = await new Promise((resolve, reject) => {
+            connection.query(sql, (error, results) => {
+                if (error) {
+                    console.error('Erro ao executar a consulta:', error);
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+        res.send(results.map(item => ({ wallet_address: item.wallet_address, balance: item.balance })));
+    } catch (error) {
+        res.status(500).send('Erro ao buscar dados');
+    }
 });
 
 app.listen(port, '0.0.0.0', () => {
