@@ -34,6 +34,8 @@ Iniciar o Contêiner Node.js:
 
 docker run -d --network my-network -p 3000:3000 --name node-container node-image
 
+docker start node-container
+
 
 
 

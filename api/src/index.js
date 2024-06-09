@@ -20,6 +20,19 @@ app.get('/readiness', async (req, res) => {
     }
 });
 
+app.get('/wallets', async (req, res) => {
+    try {
+        const connection = await connectToDatabase(); // Conecta ao banco de dados
+        const [rows] = await connection.query('SELECT * FROM bitcoin_wallets'); // Executa a consulta
+        res.status(200).json(rows); // Retorna os resultados da consulta
+        connection.release(); // Libera a conexão
+    } catch (error) {
+        console.error('Erro ao buscar os dados das carteiras:', error);
+        res.status(500).send('Erro ao buscar os dados das carteiras');
+    }
+});
+
+
 app.listen(port, '0.0.0.0', () => {
     console.log('Servidor rodando na porta: ' + port);
 });
